@@ -114,13 +114,14 @@ End compose_functors.
  To justify this definition, in theory/functors we show that instances of this new functor
  class do indeed give rise to instances of the original nice abstract Functor class. *)
 
-Class SFmap (M : Type → Type) := sfmap: ∀ `(A → B), (M A → M B).
+Class SFmap (M : Type → Type) := sfmap: ∀ {A B} {eqA:Equiv A} {eqB:Equiv B} `(A → B), (M A → M B).
 
 Class SFunctor (M : Type → Type) 
-     `{∀ `{Equiv A}, Equiv (M A)} `{SFmap M} : Prop :=
-  { sfunctor_setoid `{Setoid A} :> Setoid (M A)
-  ; sfmap_proper `{Setoid A} `{Setoid B} :>
-      Proper (((=) ==> (=)) ==> ((=) ==> (=))) (@sfmap M _ A B)
-  ; sfmap_id `{Setoid A} : sfmap id = id
-  ; sfmap_comp `{Equiv A} `{Equiv B} `{Equiv C} `{!Setoid_Morphism (f : B → C)} `{!Setoid_Morphism (g : A → B)} :
+     `{eqM: forall A, (Equiv A) -> Equiv (M A)} `{SFmap M} : Prop :=
+  { sfunctor_setoid `{PartialSetoid A} :> PartialSetoid (M A) 
+  ; sfmap_proper `{@PartialSetoid A eqA} `{@PartialSetoid B eqB} :>
+      Proper (((=) ==> (=)) ==> ((=) ==> (=))) (@sfmap M _ A B eqA eqB) 
+  ; sfmap_id `{@PartialSetoid A eqA} : sfmap id = id 
+  ; sfmap_comp `{eqA:Equiv A} `{eqB:Equiv B} `{eqC:Equiv C} `{!PartialSetoid_Morphism (f : B → C)} `{!PartialSetoid_Morphism (g : A → B)} :
       sfmap (f ∘ g) = sfmap f ∘ sfmap g }.
+

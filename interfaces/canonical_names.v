@@ -10,6 +10,7 @@ Definition id {A : Type} (a : A) := a.
 (* Equality *)
 Class Equiv A := equiv: relation A.
 
+
 (* Revert to transparency to allow conversions during unification. *)
 Typeclasses Transparent Equiv.
 Typeclasses Transparent compose flip.
@@ -33,6 +34,7 @@ Hint Extern 2 (?x = ?y) => auto_trans.
 
 (* Coq sometimes uses an incorrect DefaultRelation, so we override it. *)
 Instance equiv_default_relation `{Equiv A} : DefaultRelation (=) | 3.
+
 
 (*
 Because Coq does not support setoid rewriting in Type'd relations

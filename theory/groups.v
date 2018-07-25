@@ -84,7 +84,7 @@ Proof.
   assert (∀ (f g : A → B), g = f → SemiGroup_Morphism f → SemiGroup_Morphism g) as P.
    intros f g E [? ? ? ?].
    split; try apply _.
-    eapply setoids.morphism_proper; eauto.
+    eapply setoids.setoid_morphism_proper; eauto.
    intros x y. now rewrite (E (x & y)), (E x), (E y).
   intros f g ?; split; intros Mor.
    apply P with f. destruct Mor. now symmetry. apply _.

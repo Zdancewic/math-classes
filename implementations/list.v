@@ -167,7 +167,7 @@ Arguments app {A} _ _.
 
 Section contents.
   Context `{Setoid A}.
-
+  
   Global Instance list_equiv: Equiv (list A) := eqlistA (=).
   Global Instance list_nil: MonUnit (list A) := [].
   Global Instance list_app: SgOp (list A) := app.
@@ -177,9 +177,6 @@ Section contents.
 
   Instance: Setoid (list A).
   Proof. constructor; apply _. Qed.
-
-  Instance app_proper: Proper ((=) ==> (=) ==> (=)) (@app A).
-  Proof. apply _. Qed. 
 
   Global Instance: Monoid (list A).
   Proof.
@@ -191,32 +188,63 @@ Section contents.
   Qed.
 End contents.
 
+Section partial_setoid.
+  Context `{PartialSetoid A}.
+
+  Global Instance list_psym : Symmetric (list_equiv).
+  Proof.
+    red.
+    induction x; destruct y; intros; simpl in *; intuition.
+    inversion H0. inversion H0.
+    inversion H0. subst.
+    econstructor. symmetry. assumption. apply IHx. assumption.
+  Qed.
+
+  Global Instance list_ptrans : Transitive (list_equiv).
+  Proof.
+    red.
+    induction x; destruct y; destruct z; intros H1 H2; try inversion H1; try inversion H2.
+    - assumption.
+    - subst. econstructor. eapply transitivity; eauto. eapply IHx; eauto.
+  Qed.      
+    
+  Global Instance pmonoid_list : PartialSetoid (list A).
+  Proof.
+    constructor; eauto.
+  Qed.    
+
+  Instance app_proper: Proper ((=) ==> (=) ==> (=)) (@app A).
+  Proof. apply _. Qed. 
+
+End partial_setoid.
+  
+
 Lemma list_equiv_eq {A} (x y : list A) : 
   @list_equiv A (≡) x y ↔ x ≡ y.
 Proof. split. induction 1. reflexivity. now f_equal. intros. now subst. Qed.
 
-Instance list_join: MonadJoin list := λ _, fix list_join ll :=
+Instance list_join: MonadJoin list := λ _ _, fix list_join ll :=
   match ll with
   | [] => []
   | l :: ll => l & list_join ll
   end.
-Instance list_map: SFmap list := map.
-Instance list_ret: MonadReturn list := λ _ x, [x].
+Instance list_map: SFmap list := fun A B eqA EqB => @map A B.
+Instance list_ret: MonadReturn list := λ _ _ x, [x].
 
-Instance list_join_proper `{Setoid A} : Proper (=) (@list_join A).
+Instance list_join_proper `{@PartialSetoid A eqA} : Proper (=) (@list_join A eqA).
 Proof.
   intros l. induction l; intros k E; inversion_clear E; try reflexivity.
-  simpl. apply app_proper; auto.
+  simpl. econstructor. apply app_proper; auto.
 Qed.
 
-Instance list_ret_proper `{Equiv A}: Proper (=) (list_ret A).
+Instance list_ret_proper `{eqA:Equiv A}: Proper (=) (list_ret A eqA).
 Proof. compute. firstorder. Qed.
 
-Instance list_map_proper `{Setoid A} `{Setoid B} : 
-  Proper (((=) ==> (=)) ==> ((=) ==> (=))) (list_map A B).
+Instance list_map_proper `{@PartialSetoid A eqA} `{@PartialSetoid B eqB} : 
+  Proper (((=) ==> (=)) ==> ((=) ==> (=))) (@map A B).
 Proof.
   intros f g E1 l. induction l; intros k E2; inversion_clear E2.
-   reflexivity.
+  constructor.
   simpl. apply cons_proper; auto.
 Qed.
 
@@ -235,17 +263,20 @@ Proof. pose proof (setoidmor_b f). now setoid_rewrite map_app. Qed.
 Local Instance: SFunctor list.
 Proof.
   split; try apply _; unfold sfmap, list_map, compose.
-   intros. intros ???. now rewrite map_id.
-  intros A ? B ? C ? f ? g ? ?? E.
-  pose proof (setoidmor_a f). pose proof (setoidmor_b f).
-  pose proof (setoidmor_a g). now rewrite <-E, map_map.
+  - intros A eqA H0 x y Hxy. rewrite map_id.
+    unfold id. assumption.
+  - intros A ? B ? C ? f ? g ? ?? E.
+    pose proof (psetoidmor_a f). pose proof (psetoidmor_b f).
+    pose proof (psetoidmor_a g). rewrite map_map.
+    apply list_map_proper. eauto. assumption.
 Qed.
 
+(*
 Instance: StrongMonad list.
 Proof.
   split; try apply _; unfold compose, id, sfmap, join, ret.
       intros A ? B ? f [???].
-      intros ?? E. now rewrite <-E.
+      intros ?? E. rewrite <-E. 
      intros A ? B ? f ? l k E. pose proof (setoidmor_a f). pose proof (setoidmor_b f).
      rewrite <-E. clear E. induction l; try reflexivity.
      simpl. setoid_rewrite <-IHl. now apply list_map_app.
@@ -259,7 +290,7 @@ Qed.
 
 Instance: FullMonad list.
 Proof. apply strong_monad_default_full_monad. Qed.
-
+*)
 (*
   (* so far so good, but now: *)
 

@@ -22,6 +22,15 @@ Setoid_Morphism as a substructure, setoid rewriting will become horribly slow.
 (* An unbundled variant of the former CoRN RSetoid *)
 Class Setoid A {Ae : Equiv A} : Prop := setoid_eq :> Equivalence (@equiv A Ae).
 
+Class PartialSetoid A {Ae : Equiv A} : Prop := psetoid_eq :> RelationClasses.PER (@equiv A Ae).
+
+
+(* Every Setoid is a PartialSetoid *)
+Instance psetoid_of_setoid `{@Setoid A eqA} : @PartialSetoid A eqA.
+Proof.
+  constructor. apply Equivalence_Symmetric. apply Equivalence_Transitive.
+Qed.  
+
 (* An unbundled variant of the former CoRN CSetoid. We do not 
   include a proof that A is a Setoid because it can be derived. *)
 Class StrongSetoid A {Ae : Equiv A} `{Aap : Apart A} : Prop :=
@@ -48,6 +57,21 @@ End setoid_morphisms.
 
 Arguments sm_proper {A B Ae Be f Setoid_Morphism} _ _ _.
 Hint Extern 4 (?f _ = ?f _) => eapply (sm_proper (f:=f)).
+
+
+Section psetoid_morphisms.
+  Context {A B} {Ae : Equiv A} {Be : Equiv B} (f : A → B).
+
+  Class PartialSetoid_Morphism :=
+    { psetoidmor_a : PartialSetoid A
+    ; psetoidmor_b : PartialSetoid B
+    ; psm_proper :> Proper ((=) ==> (=)) f }. 
+
+End psetoid_morphisms.
+
+Arguments psm_proper {A B Ae Be f PartialSetoid_Morphism} _ _ _.
+Hint Extern 4 (?f _ = ?f _) => eapply (psm_proper (f:=f)).
+
 
 Section setoid_binary_morphisms.
   Context {A B C} {Ae: Equiv A} {Aap: Apart A} 

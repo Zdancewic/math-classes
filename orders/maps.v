@@ -290,7 +290,7 @@ Section propers.
   Proof.
     assert (∀ (f g : A → B), g = f → Order_Morphism f → Order_Morphism g) as P.
      intros f g E [[? ? ?] ?].
-     split; auto. apply morphism_proper with f. easy. split; easy.
+     split; auto. apply setoid_morphism_proper with f. easy. split; easy.
     firstorder.
   Qed.
 
