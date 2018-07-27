@@ -7,8 +7,18 @@ Proof. intros ?? E. now apply sm_proper. Qed.
 Lemma ext_pequiv_refl `{PartialSetoid_Morphism A B f} : f = f.
 Proof. intros ?? E. now apply psm_proper. Qed.
 
+(*
 Instance ext_equiv_trans `{Equiv A} `{Equiv B} `{Reflexive (A:=A) (=)} `{Transitive (A:=B) (=)} : Transitive (_ : Equiv (A → B)).
 Proof. intros ? y ???? w ?. transitivity (y w). apply H3.  assumption. apply H4. firstorder. Qed.
+*)
+
+Instance ext_equiv_trans `{Equiv A} `{Equiv B} `{Symmetric (A:=A) (=)} `{Transitive (A:=A) (=)} `{Transitive (A:=B) (=)} : Transitive (_ : Equiv (A → B)).
+Proof.
+  repeat red. intros x y z H4 H5 x0 y0 H6.
+  transitivity (y y0). apply H4. assumption. apply H5.
+  eapply transitivity. symmetry. apply H6. assumption.
+Qed.
+
 
 Instance ext_equiv_sym `{Equiv A} `{Equiv B} `{Symmetric (A:=A) (=)} `{Symmetric (A:=B) (=)}: Symmetric (A:=A→B) (=).
 Proof. firstorder. Qed.
