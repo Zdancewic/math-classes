@@ -1,5 +1,9 @@
+_CoqProject
+Makefile.conf
 Makefile.bak
-*.v.d
+Makefile.coq
+Makefile.coq.conf
+*.d
 *.vo
 *.glob
 *.pdf
@@ -9,6 +13,7 @@ tmp.*
 coqidescript
 coqdoc
 *#
+*~
 *.ml
 *.cmi
 *.cmx
